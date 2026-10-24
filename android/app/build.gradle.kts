@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "cl.example.cimuc"
+    namespace = "cl.duocuc.cimuc"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "cl.example.cimuc"
+        applicationId = "cl.duocuc.cimuc"
         minSdk = 33
         targetSdk = 37
         versionCode = 1
@@ -37,6 +37,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
