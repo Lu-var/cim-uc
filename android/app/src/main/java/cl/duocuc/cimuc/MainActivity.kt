@@ -1,4 +1,4 @@
-package cl.example.cimuc
+package cl.duocuc.cimuc
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
