@@ -66,8 +66,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
             // P-01 Inicio
             composable(Screen.Inicio.route) {
                 val viewModel: InicioViewModel = viewModel(factory = viewModelFactory)
+                val conteos by viewModel.conteos.collectAsState()
                 InicioScreen(
-                    conteos = viewModel.conteos.value,
+                    conteos = conteos,
                     onBuscar = { navController.navigate(Screen.Explorar.route) },
                     onTipoSeleccionado = { navController.navigate(Screen.Explorar.route) },
                     onActividades = {
@@ -83,8 +84,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
             // P-02 Explorar
             composable(Screen.Explorar.route) {
                 val viewModel: ExplorarViewModel = viewModel(factory = viewModelFactory)
+                val uiState by viewModel.uiState.collectAsState()
                 ExplorarScreen(
-                    uiState = viewModel.uiState.value,
+                    uiState = uiState,
                     onQueryChanged = viewModel::onQueryChanged,
                     onAreaSelected = viewModel::onAreaSelected,
                     onAnioSelected = viewModel::onAnioSelected,
@@ -103,8 +105,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 val proyectoId = entry.arguments?.getInt("proyectoId") ?: 0
                 val viewModel: DetalleViewModel = viewModel(factory = viewModelFactory)
                 LaunchedEffect(proyectoId) { viewModel.cargarProyecto(proyectoId) }
+                val uiState by viewModel.uiState.collectAsState()
                 DetalleScreen(
-                    uiState = viewModel.uiState.value,
+                    uiState = uiState,
                     onBack = { navController.popBackStack() },
                     onVerRelacionados = {
                         navController.navigate(Screen.Relacionados.create(proyectoId))
@@ -130,8 +133,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 val proyectoId = entry.arguments?.getInt("proyectoId") ?: 0
                 val viewModel: DetalleViewModel = viewModel(factory = viewModelFactory)
                 LaunchedEffect(proyectoId) { viewModel.cargarProyecto(proyectoId) }
+                val uiState by viewModel.uiState.collectAsState()
                 RelacionadosScreen(
-                    uiState = viewModel.uiState.value,
+                    uiState = uiState,
                     onBack = { navController.popBackStack() },
                     onContactar = {
                         navController.navigate(Screen.Contacto.create(proyectoId))
@@ -152,8 +156,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 LaunchedEffect(areaId) {
                     if (areaId > 0) viewModel.onAreaSelected(areaId)
                 }
+                val uiState by viewModel.uiState.collectAsState()
                 ActividadesScreen(
-                    uiState = viewModel.uiState.value,
+                    uiState = uiState,
                     onAreaSelected = viewModel::onAreaSelected
                 )
             }
@@ -169,7 +174,8 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 LaunchedEffect(proyectoId) { detalleViewModel.cargarProyecto(proyectoId) }
 
                 val contactoState by contactoViewModel.uiState.collectAsState()
-                val proyectoTitulo = detalleViewModel.uiState.value.proyecto?.titulo.orEmpty()
+                val detalleState by detalleViewModel.uiState.collectAsState()
+                val proyectoTitulo = detalleState.proyecto?.titulo.orEmpty()
                 LaunchedEffect(proyectoTitulo) {
                     if (proyectoTitulo.isNotEmpty()) {
                         contactoViewModel.cargarProyectoReferido(proyectoTitulo)
