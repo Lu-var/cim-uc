@@ -1,5 +1,10 @@
 package cl.duocuc.cimuc.navigation
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,6 +30,7 @@ import androidx.navigation.navArgument
 import cl.duocuc.cimuc.CimViewModelFactory
 import cl.duocuc.cimuc.data.repository.CimRepository
 import cl.duocuc.cimuc.data.repository.ContactoRepository
+import cl.duocuc.cimuc.domain.model.Proyecto
 import cl.duocuc.cimuc.ui.components.BottomNavBar
 import cl.duocuc.cimuc.ui.screens.actividades.ActividadesScreen
 import cl.duocuc.cimuc.ui.screens.confirmacion.ConfirmacionScreen
@@ -37,13 +45,13 @@ import cl.duocuc.cimuc.viewmodel.ContactoViewModel
 import cl.duocuc.cimuc.viewmodel.DetalleViewModel
 import cl.duocuc.cimuc.viewmodel.ExplorarViewModel
 import cl.duocuc.cimuc.viewmodel.InicioViewModel
-import androidx.compose.runtime.remember
 
 // Grafo de navegación declarativo conectando P-01 a P-07 (N1 / issue #1)
 @Composable
 fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepository) {
     val navController = rememberNavController()
     val viewModelFactory = CimViewModelFactory(cimRepository, contactoRepository)
+    val context = LocalContext.current
 
     Scaffold(
         bottomBar = {
@@ -150,6 +158,19 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 DetalleScreen(
                     uiState = uiState,
                     onBack = { navController.popBackStack() },
+                    onCompartir = {
+                        uiState.proyecto?.let { proyecto -> compartirProyecto(context, proyecto) }
+                    },
+                    onRedactarCorreo = {
+                        uiState.proyecto?.let { proyecto ->
+                            redactarCorreo(
+                                context = context,
+                                asunto = "Consulta sobre ${proyecto.titulo}",
+                                mensaje = "Hola, quisiera recibir más información sobre " +
+                                    "${proyecto.titulo}."
+                            )
+                        }
+                    },
                     onVerRelacionados = {
                         navController.navigate(Screen.Relacionados.create(proyectoId))
                     },
@@ -240,7 +261,28 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                     onOrganizacionChange = contactoViewModel::onOrganizacionChange,
                     onMotivoChange = contactoViewModel::onMotivoChange,
                     onMensajeChange = contactoViewModel::onMensajeChange,
-                    onEnviarClick = contactoViewModel::onEnviarClick
+                    onEnviarClick = contactoViewModel::onEnviarClick,
+                    onRedactarCorreo = {
+                        val formulario = when (val estado = contactoState) {
+                            is ContactoUiState.Formulario -> estado
+                            is ContactoUiState.Error -> estado.formulario
+                            else -> null
+                        }
+                        if (formulario != null) {
+                            redactarCorreo(
+                                context = context,
+                                asunto = "Consulta de contacto a CIM UC",
+                                mensaje = buildString {
+                                    appendLine("Nombre: ${formulario.nombre}")
+                                    appendLine("Correo: ${formulario.correo}")
+                                    appendLine("Organización: ${formulario.organizacion}")
+                                    appendLine("Motivo: ${formulario.motivo}")
+                                    appendLine("Contenido referido: ${formulario.proyectoReferidoTitulo}")
+                                    appendLine("Mensaje: ${formulario.mensaje}")
+                                }
+                            )
+                        }
+                    }
                 )
             }
 
@@ -255,6 +297,16 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 }.collectAsState(initial = null)
                 ConfirmacionScreen(
                     solicitud = solicitud,
+                    onRedactarCorreo = {
+                        redactarCorreo(
+                            context = context,
+                            asunto = "Seguimiento de solicitud a CIM UC",
+                            mensaje = solicitud?.let {
+                                "Hola, quisiera consultar por mi solicitud ${it.id}, " +
+                                    "relacionada con ${it.proyectoReferidoTitulo}."
+                            }.orEmpty()
+                        )
+                    },
                     onVolverInicio = {
                         navController.navigate(Screen.Inicio.route) {
                             popUpTo(Screen.Inicio.route) { inclusive = true }
@@ -264,5 +316,49 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 )
             }
         }
+    }
+}
+
+// Configurar solo con una dirección institucional confirmada por el equipo.
+private const val DESTINATARIO_INSTITUCIONAL = ""
+
+private fun compartirProyecto(context: Context, proyecto: Proyecto) {
+    val contenido = buildString {
+        append(proyecto.titulo)
+        if (proyecto.areaNombre.isNotBlank()) append("\n\nÁrea: ${proyecto.areaNombre}")
+        if (proyecto.descripcion.isNotBlank()) append("\n\n${proyecto.descripcion}")
+    }
+    val intentCompartir = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, contenido)
+    }
+
+    try {
+        context.startActivity(Intent.createChooser(intentCompartir, "Compartir proyecto CIM UC"))
+    } catch (_: ActivityNotFoundException) {
+        Toast.makeText(context, "No hay aplicaciones disponibles para compartir.", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun redactarCorreo(context: Context, asunto: String, mensaje: String) {
+    if (DESTINATARIO_INSTITUCIONAL.isBlank()) {
+        Toast.makeText(context, "El destinatario institucional aún no está configurado.", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val uriMailto = Uri.parse(
+        "mailto:${Uri.encode(DESTINATARIO_INSTITUCIONAL, "@")}" +
+            "?subject=${Uri.encode(asunto)}&body=${Uri.encode(mensaje)}"
+    )
+    val intentCorreo = Intent(Intent.ACTION_SENDTO).apply { data = uriMailto }
+    if (intentCorreo.resolveActivity(context.packageManager) == null) {
+        Toast.makeText(context, "No hay una aplicación de correo disponible.", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    try {
+        context.startActivity(intentCorreo)
+    } catch (_: ActivityNotFoundException) {
+        Toast.makeText(context, "No hay una aplicación de correo disponible.", Toast.LENGTH_SHORT).show()
     }
 }
