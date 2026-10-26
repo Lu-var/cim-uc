@@ -48,10 +48,21 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 BottomNavBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(Screen.Inicio.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        if (route == Screen.Inicio.route) {
+                            // Inicio va directo al home: sin saveState/restoreState,
+                            // para no restaurar fotos previas del stack (#bug botón Inicio)
+                            if (currentRoute != Screen.Inicio.route) {
+                                navController.navigate(route) {
+                                    popUpTo(Screen.Inicio.route) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(Screen.Inicio.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     }
                 )
