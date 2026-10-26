@@ -5,9 +5,11 @@ import cl.duocuc.cimuc.data.local.relation.ActividadConArea
 import cl.duocuc.cimuc.data.local.relation.ProyectoConDetalles
 import cl.duocuc.cimuc.domain.model.Actividad
 import cl.duocuc.cimuc.domain.model.AreaTematica
+import cl.duocuc.cimuc.domain.model.Conteos
 import cl.duocuc.cimuc.domain.model.Integrante
 import cl.duocuc.cimuc.domain.model.Proyecto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 
@@ -62,6 +64,26 @@ open class CimRepository(private val database: AppDatabase? = null) {
                     organizacionId = it.idOrganizacion
                 )
             }
+        }
+    }
+
+    // Conteos para las tarjetas de acceso de P-01 (mockup HU-01)
+    open fun getConteos(): Flow<Conteos> {
+        val db = database ?: return emptyFlow()
+        return combine(
+            db.proyectoDao().getAll(),
+            db.capacidadDao().getAll(),
+            db.integranteDao().getAll(),
+            db.publicacionDao().getAll(),
+            db.actividadDao().getAll()
+        ) { proyectos, capacidades, integrantes, publicaciones, actividades ->
+            Conteos(
+                proyectos = proyectos.size,
+                capacidades = capacidades.size,
+                integrantes = integrantes.size,
+                publicaciones = publicaciones.size,
+                actividades = actividades.size
+            )
         }
     }
 
