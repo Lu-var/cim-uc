@@ -33,7 +33,7 @@ Desarrollar una aplicación móvil nativa funcional para el **Centro UC de Innov
 Organización modular bajo el estándar de nombres del proyecto:
 
 ```text
-cl.duoc.cimuc/
+cl.duocuc.cimuc/
 ├── MainActivity.kt
 ├── data/
 │   ├── local/
