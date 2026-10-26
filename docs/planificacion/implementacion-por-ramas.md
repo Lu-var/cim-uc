@@ -88,7 +88,7 @@ Cierre: checklist "Lógica y Validación" del plan, commits, PR → main.
 
 ---
 
-## Rama 4 · `feat/formulario-contacto` (F1–F5 · #6–#10) — requiere ramas 1 y 3 mergeadas
+## Rama 4 · `feat/formulario-contacto` (F1–F5 · #6–#10) — requiere ramas 1 y 3 mergeadas ✅
 
 | # | Paso | Detalle |
 | :-- | :--- | :--- |
