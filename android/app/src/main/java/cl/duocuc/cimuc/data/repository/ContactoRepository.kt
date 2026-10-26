@@ -18,13 +18,17 @@ open class ContactoRepository(private val database: AppDatabase? = null) {
         correo: String,
         mensaje: String,
         idProyectoReferido: Int,
-        fecha: String? = null
+        fecha: String? = null,
+        organizacion: String = "",
+        motivo: String = ""
     ): Long {
         val db = database ?: return -1L
         val fechaRegistro = fecha ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val entity = SolicitudContactoEntity(
             nombreContacto = nombre.trim(),
             correoFicticio = correo.trim(),
+            organizacion = organizacion.trim(),
+            motivo = motivo.trim(),
             mensaje = mensaje.trim(),
             fecha = fechaRegistro,
             idContenidoReferido = idProyectoReferido
@@ -45,6 +49,8 @@ open class ContactoRepository(private val database: AppDatabase? = null) {
                     id = it.idSolicitud,
                     nombreContacto = it.nombreContacto,
                     correoFicticio = it.correoFicticio,
+                    organizacion = it.organizacion,
+                    motivo = it.motivo,
                     mensaje = it.mensaje,
                     fecha = it.fecha,
                     idContenidoReferido = it.idContenidoReferido
@@ -58,6 +64,8 @@ open class ContactoRepository(private val database: AppDatabase? = null) {
             id = solicitud.idSolicitud,
             nombreContacto = solicitud.nombreContacto,
             correoFicticio = solicitud.correoFicticio,
+            organizacion = solicitud.organizacion,
+            motivo = solicitud.motivo,
             mensaje = solicitud.mensaje,
             fecha = solicitud.fecha,
             idContenidoReferido = solicitud.idContenidoReferido,

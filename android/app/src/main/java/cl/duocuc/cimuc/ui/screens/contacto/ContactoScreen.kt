@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -23,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 import cl.duocuc.cimuc.viewmodel.ContactoUiState
 
@@ -35,6 +37,8 @@ fun ContactoScreen(
     onBack: () -> Unit,
     onNombreChange: (String) -> Unit,
     onCorreoChange: (String) -> Unit,
+    onOrganizacionChange: (String) -> Unit,
+    onMotivoChange: (String) -> Unit,
     onMensajeChange: (String) -> Unit,
     onEnviarClick: () -> Unit
 ) {
@@ -47,6 +51,8 @@ fun ContactoScreen(
                 contentPadding = padding,
                 onNombreChange = onNombreChange,
                 onCorreoChange = onCorreoChange,
+                onOrganizacionChange = onOrganizacionChange,
+                onMotivoChange = onMotivoChange,
                 onMensajeChange = onMensajeChange,
                 onEnviarClick = onEnviarClick
             )
@@ -71,6 +77,8 @@ fun ContactoScreen(
                 contentPadding = padding,
                 onNombreChange = onNombreChange,
                 onCorreoChange = onCorreoChange,
+                onOrganizacionChange = onOrganizacionChange,
+                onMotivoChange = onMotivoChange,
                 onMensajeChange = onMensajeChange,
                 onEnviarClick = onEnviarClick
             )
@@ -95,6 +103,8 @@ private fun FormularioContacto(
     contentPadding: PaddingValues,
     onNombreChange: (String) -> Unit,
     onCorreoChange: (String) -> Unit,
+    onOrganizacionChange: (String) -> Unit,
+    onMotivoChange: (String) -> Unit,
     onMensajeChange: (String) -> Unit,
     onEnviarClick: () -> Unit
 ) {
@@ -106,28 +116,14 @@ private fun FormularioContacto(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Tarjeta "Contenido referido" de solo lectura (issue #6)
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "Contenido referido",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = uiState.proyectoReferidoTitulo,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
+        OutlinedTextField(
+            value = uiState.proyectoReferidoTitulo,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Contenido referido") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         OutlinedTextField(
             value = uiState.nombre,
@@ -137,6 +133,7 @@ private fun FormularioContacto(
             supportingText = {
                 uiState.errorNombre?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             },
+            trailingIcon = { IconEstadoCampo(uiState.errorNombre, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -152,11 +149,34 @@ private fun FormularioContacto(
             supportingText = {
                 uiState.errorCorreo?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             },
+            trailingIcon = { IconEstadoCampo(uiState.errorCorreo, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 48.dp)
                 .semantics { contentDescription = "Campo correo" }
+        )
+
+        OutlinedTextField(
+            value = uiState.organizacion,
+            onValueChange = onOrganizacionChange,
+            label = { Text("Organización") },
+            isError = uiState.errorOrganizacion != null,
+            supportingText = { uiState.errorOrganizacion?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+            trailingIcon = { IconEstadoCampo(uiState.errorOrganizacion, uiState.intentoEnviado) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        )
+
+        OutlinedTextField(
+            value = uiState.motivo,
+            onValueChange = onMotivoChange,
+            label = { Text("Motivo") },
+            isError = uiState.errorMotivo != null,
+            supportingText = { uiState.errorMotivo?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+            trailingIcon = { IconEstadoCampo(uiState.errorMotivo, uiState.intentoEnviado) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
         )
 
         OutlinedTextField(
@@ -167,6 +187,7 @@ private fun FormularioContacto(
             supportingText = {
                 uiState.errorMensaje?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             },
+            trailingIcon = { IconEstadoCampo(uiState.errorMensaje, uiState.intentoEnviado) },
             minLines = 4,
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,5 +202,13 @@ private fun FormularioContacto(
         ) {
             Text("Enviar solicitud")
         }
+    }
+}
+
+@Composable
+private fun IconEstadoCampo(error: String?, mostrarCorrecto: Boolean) {
+    when {
+        error != null -> Icon(Icons.Filled.Error, contentDescription = "Campo con error", tint = MaterialTheme.colorScheme.error)
+        mostrarCorrecto -> Icon(Icons.Filled.CheckCircle, contentDescription = "Campo válido", tint = MaterialTheme.colorScheme.primary)
     }
 }

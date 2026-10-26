@@ -15,14 +15,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cl.duocuc.cimuc.domain.model.SolicitudContacto
 
 // P-07 Confirmación de solicitud enviada (HU-10, issue #4)
 @Composable
 fun ConfirmacionScreen(
+    solicitud: SolicitudContacto?,
     onVolverInicio: () -> Unit
 ) {
     Scaffold { padding ->
@@ -51,12 +54,18 @@ fun ConfirmacionScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "Tu solicitud de contacto quedó registrada en la base de datos " +
-                                "local del dispositivo. Un integrante del centro se pondrá en " +
-                                "contacto contigo a través del correo indicado.",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    if (solicitud == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text("Tu solicitud quedó registrada en este dispositivo.", style = MaterialTheme.typography.bodyLarge)
+                        Text("Nombre: ${solicitud.nombreContacto}")
+                        Text("Correo: ${solicitud.correoFicticio}")
+                        Text("Organización: ${solicitud.organizacion}")
+                        Text("Motivo: ${solicitud.motivo}")
+                        Text("Contenido referido: ${solicitud.proyectoReferidoTitulo}")
+                        Text("Mensaje: ${solicitud.mensaje}")
+                        Text("Fecha: ${solicitud.fecha}")
+                    }
                 }
             }
 

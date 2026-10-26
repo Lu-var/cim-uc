@@ -28,6 +28,10 @@ data class SolicitudContactoEntity(
     val nombreContacto: String,
     @ColumnInfo(name = "correo_ficticio")
     val correoFicticio: String,
+    @ColumnInfo(name = "organizacion", defaultValue = "''")
+    val organizacion: String = "",
+    @ColumnInfo(name = "motivo", defaultValue = "''")
+    val motivo: String = "",
     @ColumnInfo(name = "mensaje")
     val mensaje: String,
     @ColumnInfo(name = "fecha")

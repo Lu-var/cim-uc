@@ -26,6 +26,14 @@ class ContactoValidator {
         }
     }
 
+    fun validarOrganizacion(organizacion: String): ValidationResult =
+        if (organizacion.trim().isBlank()) ValidationResult.error("La organización es obligatoria")
+        else ValidationResult.success()
+
+    fun validarMotivo(motivo: String): ValidationResult =
+        if (motivo.trim().isBlank()) ValidationResult.error("El motivo es obligatorio")
+        else ValidationResult.success()
+
     fun validarMensaje(mensaje: String): ValidationResult {
         return when {
             mensaje.isBlank() ->
@@ -41,16 +49,23 @@ class ContactoValidator {
     fun validarFormulario(
         nombre: String,
         correo: String,
-        mensaje: String
+        mensaje: String,
+        organizacion: String = "",
+        motivo: String = ""
     ): FormularioValidationResult {
         val nombreResult = validarNombre(nombre)
         val correoResult = validarCorreo(correo)
+        val organizacionResult = validarOrganizacion(organizacion)
+        val motivoResult = validarMotivo(motivo)
         val mensajeResult = validarMensaje(mensaje)
-        val esValido = nombreResult.isValid && correoResult.isValid && mensajeResult.isValid
+        val esValido = nombreResult.isValid && correoResult.isValid && organizacionResult.isValid &&
+            motivoResult.isValid && mensajeResult.isValid
         return FormularioValidationResult(
             esValido = esValido,
             errorNombre = nombreResult.errorMessage,
             errorCorreo = correoResult.errorMessage,
+            errorOrganizacion = organizacionResult.errorMessage,
+            errorMotivo = motivoResult.errorMessage,
             errorMensaje = mensajeResult.errorMessage
         )
     }
@@ -66,5 +81,7 @@ data class FormularioValidationResult(
     val esValido: Boolean,
     val errorNombre: String? = null,
     val errorCorreo: String? = null,
+    val errorOrganizacion: String? = null,
+    val errorMotivo: String? = null,
     val errorMensaje: String? = null
 )

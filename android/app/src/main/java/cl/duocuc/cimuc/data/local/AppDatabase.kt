@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import cl.duocuc.cimuc.data.local.dao.ActividadDao
 import cl.duocuc.cimuc.data.local.dao.AreaTematicaDao
@@ -43,7 +44,7 @@ import kotlinx.coroutines.launch
         ProyectoCapacidadCrossRef::class,
         ProyectoPublicacionCrossRef::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -58,6 +59,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun solicitudContactoDao(): SolicitudContactoDao
 
     companion object {
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE solicitud_contacto ADD COLUMN organizacion TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE solicitud_contacto ADD COLUMN motivo TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -67,7 +75,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "cim_uc.db"
-                ).addCallback(object : RoomDatabase.Callback() {
+                ).addMigrations(MIGRATION_1_2).addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         CoroutineScope(Dispatchers.IO).launch {
