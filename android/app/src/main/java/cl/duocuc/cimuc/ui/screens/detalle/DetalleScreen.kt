@@ -30,6 +30,8 @@ fun DetalleScreen(
     onBack: () -> Unit,
     onVerRelacionados: () -> Unit,
     onVerActividadesDelArea: (Int) -> Unit,
+    onCompartir: () -> Unit,
+    onRedactarCorreo: () -> Unit,
     onContactar: () -> Unit
 ) {
     Scaffold(
@@ -92,6 +94,24 @@ fun DetalleScreen(
                         text = proyecto.descripcion,
                         style = MaterialTheme.typography.bodyLarge
                     )
+
+                    OutlinedButton(
+                        onClick = onCompartir,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                    ) {
+                        Text("Compartir proyecto")
+                    }
+
+                    OutlinedButton(
+                        onClick = onRedactarCorreo,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                    ) {
+                        Text("Redactar correo")
+                    }
 
                     OutlinedButton(
                         onClick = onVerRelacionados,

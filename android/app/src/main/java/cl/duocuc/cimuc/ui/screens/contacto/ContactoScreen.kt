@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -45,7 +46,8 @@ fun ContactoScreen(
     onOrganizacionChange: (String) -> Unit,
     onMotivoChange: (String) -> Unit,
     onMensajeChange: (String) -> Unit,
-    onEnviarClick: () -> Unit
+    onEnviarClick: () -> Unit,
+    onRedactarCorreo: () -> Unit
 ) {
     Scaffold(
         topBar = { TopAppBarCommon(title = "Contactar a CIM UC", onBack = onBack) }
@@ -59,7 +61,8 @@ fun ContactoScreen(
                 onOrganizacionChange = onOrganizacionChange,
                 onMotivoChange = onMotivoChange,
                 onMensajeChange = onMensajeChange,
-                onEnviarClick = onEnviarClick
+                onEnviarClick = onEnviarClick,
+                onRedactarCorreo = onRedactarCorreo
             )
 
             is ContactoUiState.Enviando -> Column(
@@ -93,7 +96,8 @@ fun ContactoScreen(
                 onOrganizacionChange = onOrganizacionChange,
                 onMotivoChange = onMotivoChange,
                 onMensajeChange = onMensajeChange,
-                onEnviarClick = onEnviarClick
+                onEnviarClick = onEnviarClick,
+                onRedactarCorreo = onRedactarCorreo
             )
 
             // Tras el éxito la navegación a P-07 la orquesta el NavHost
@@ -119,7 +123,8 @@ private fun FormularioContacto(
     onOrganizacionChange: (String) -> Unit,
     onMotivoChange: (String) -> Unit,
     onMensajeChange: (String) -> Unit,
-    onEnviarClick: () -> Unit
+    onEnviarClick: () -> Unit,
+    onRedactarCorreo: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -208,6 +213,15 @@ private fun FormularioContacto(
                 .heightIn(min = 48.dp)
         ) {
             Text("Enviar solicitud")
+        }
+
+        OutlinedButton(
+            onClick = onRedactarCorreo,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+        ) {
+            Text("Redactar correo")
         }
     }
 }

@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +29,7 @@ import cl.duocuc.cimuc.domain.model.SolicitudContacto
 @Composable
 fun ConfirmacionScreen(
     solicitud: SolicitudContacto?,
+    onRedactarCorreo: () -> Unit,
     onVolverInicio: () -> Unit
 ) {
     Scaffold { padding ->
@@ -33,7 +37,8 @@ fun ConfirmacionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -67,6 +72,15 @@ fun ConfirmacionScreen(
                         Text("Fecha: ${solicitud.fecha}")
                     }
                 }
+            }
+
+            OutlinedButton(
+                onClick = onRedactarCorreo,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+            ) {
+                Text("Redactar correo")
             }
 
             Button(
