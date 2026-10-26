@@ -17,15 +17,23 @@ sealed interface ContactoUiState {
     data class Formulario(
         val nombre: String = "",
         val correo: String = "",
+        val organizacion: String = "",
+        val motivo: String = "",
         val mensaje: String = "",
         val proyectoReferidoTitulo: String = "",
+        val idProyectoReferido: Int = 0,
         val errorNombre: String? = null,
         val errorCorreo: String? = null,
+        val errorOrganizacion: String? = null,
+        val errorMotivo: String? = null,
         val errorMensaje: String? = null,
         val intentoEnviado: Boolean = false
     ) : ContactoUiState
 
-    data class Enviando(val nombre: String, val correo: String, val mensaje: String) : ContactoUiState
+    data class Enviando(
+        val nombre: String, val correo: String, val organizacion: String,
+        val motivo: String, val mensaje: String, val idProyectoReferido: Int
+    ) : ContactoUiState
 
     data class Error(val mensaje: String, val formulario: Formulario) : ContactoUiState
 
@@ -48,9 +56,9 @@ class ContactoViewModel(
     private val _uiState = MutableStateFlow<ContactoUiState>(ContactoUiState.Formulario())
     val uiState: StateFlow<ContactoUiState> = _uiState.asStateFlow()
 
-    fun cargarProyectoReferido(titulo: String) {
+    fun cargarProyectoReferido(titulo: String, id: Int? = null) {
         val actual = _uiState.value as? ContactoUiState.Formulario ?: return
-        _uiState.value = actual.copy(proyectoReferidoTitulo = titulo)
+        _uiState.value = actual.copy(proyectoReferidoTitulo = titulo, idProyectoReferido = id ?: actual.idProyectoReferido)
     }
 
     // Los campos son estado controlado: no se limpian al fallar la validación (#9)
@@ -62,18 +70,31 @@ class ContactoViewModel(
         actualizarFormulario { it.copy(correo = valor, errorCorreo = null) }
     }
 
+    fun onOrganizacionChange(valor: String) {
+        actualizarFormulario { it.copy(organizacion = valor, errorOrganizacion = null) }
+    }
+
+    fun onMotivoChange(valor: String) {
+        actualizarFormulario { it.copy(motivo = valor, errorMotivo = null) }
+    }
+
     fun onMensajeChange(valor: String) {
         actualizarFormulario { it.copy(mensaje = valor, errorMensaje = null) }
     }
 
     fun onEnviarClick() {
         val formulario = _uiState.value as? ContactoUiState.Formulario ?: return
-        val resultado = validador.validarFormulario(formulario.nombre, formulario.correo, formulario.mensaje)
+        val resultado = validador.validarFormulario(
+            formulario.nombre, formulario.correo, formulario.mensaje,
+            formulario.organizacion, formulario.motivo
+        )
 
         if (!resultado.esValido) {
             _uiState.value = formulario.copy(
                 errorNombre = resultado.errorNombre,
                 errorCorreo = resultado.errorCorreo,
+                errorOrganizacion = resultado.errorOrganizacion,
+                errorMotivo = resultado.errorMotivo,
                 errorMensaje = resultado.errorMensaje,
                 intentoEnviado = true
             )
@@ -83,7 +104,10 @@ class ContactoViewModel(
         _uiState.value = ContactoUiState.Enviando(
             nombre = formulario.nombre,
             correo = formulario.correo,
-            mensaje = formulario.mensaje
+            organizacion = formulario.organizacion,
+            motivo = formulario.motivo,
+            mensaje = formulario.mensaje,
+            idProyectoReferido = formulario.idProyectoReferido
         )
 
         viewModelScope.launch {
@@ -92,7 +116,9 @@ class ContactoViewModel(
                     nombre = formulario.nombre,
                     correo = formulario.correo,
                     mensaje = formulario.mensaje,
-                    idProyectoReferido = 1 // Se reemplaza al conectar con el proyecto real (#10)
+                    idProyectoReferido = formulario.idProyectoReferido,
+                    organizacion = formulario.organizacion,
+                    motivo = formulario.motivo
                 )
                 if (id > 0) {
                     val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

@@ -28,7 +28,9 @@ class ContactoViewModelTest {
             correo: String,
             mensaje: String,
             idProyectoReferido: Int,
-            fecha: String?
+            fecha: String?,
+            organizacion: String,
+            motivo: String
         ): Long {
             return if (registrarOk) 42L else -1L
         }
@@ -50,6 +52,8 @@ class ContactoViewModelTest {
 
         viewModel.onNombreChange("An")
         viewModel.onCorreoChange("correo-malo")
+        viewModel.onOrganizacionChange("Universidad")
+        viewModel.onMotivoChange("Consulta")
         viewModel.onMensajeChange("Hola")
         viewModel.onEnviarClick()
         advanceUntilIdle()
@@ -61,6 +65,8 @@ class ContactoViewModelTest {
         // Los datos escritos permanecen intactos (#9)
         assertEquals("An", formulario.nombre)
         assertEquals("correo-malo", formulario.correo)
+        assertEquals("Universidad", formulario.organizacion)
+        assertEquals("Consulta", formulario.motivo)
         assertEquals("Hola", formulario.mensaje)
 
         // Y los errores por campo están marcados (#13 estados)
@@ -75,6 +81,8 @@ class ContactoViewModelTest {
 
         viewModel.onNombreChange("Ana Morales")
         viewModel.onCorreoChange("ana@duocuc.cl")
+        viewModel.onOrganizacionChange("CIM UC")
+        viewModel.onMotivoChange("Asesoría")
         viewModel.onMensajeChange("Me interesa una asesoría técnica completa")
         viewModel.onEnviarClick()
 
@@ -96,6 +104,8 @@ class ContactoViewModelTest {
 
         viewModel.onNombreChange("Ana Morales")
         viewModel.onCorreoChange("ana@duocuc.cl")
+        viewModel.onOrganizacionChange("CIM UC")
+        viewModel.onMotivoChange("Asesoría")
         viewModel.onMensajeChange("Consulta sobre capacidades I+D del centro")
         viewModel.onEnviarClick()
         advanceUntilIdle()

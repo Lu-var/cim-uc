@@ -67,12 +67,16 @@ class ContactoValidatorTest {
         val resultado = validator.validarFormulario(
             nombre = "Ana Morales",
             correo = "ana@duocuc.cl",
-            mensaje = "Me interesa información sobre proyectos de madera"
+            mensaje = "Me interesa información sobre proyectos de madera",
+            organizacion = "CIM UC",
+            motivo = "Consulta técnica"
         )
 
         assertTrue(resultado.esValido)
         assertNull(resultado.errorNombre)
         assertNull(resultado.errorCorreo)
+        assertNull(resultado.errorOrganizacion)
+        assertNull(resultado.errorMotivo)
         assertNull(resultado.errorMensaje)
         assertEquals(null, resultado.errorNombre)
     }

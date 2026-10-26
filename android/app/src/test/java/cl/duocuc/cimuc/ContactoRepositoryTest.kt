@@ -59,12 +59,16 @@ class ContactoRepositoryTest {
             correo: String,
             mensaje: String,
             idProyectoReferido: Int,
-            fecha: String?
+            fecha: String?,
+            organizacion: String,
+            motivo: String
         ): Long {
             return fakeDao.insert(
                 SolicitudContactoEntity(
                     nombreContacto = nombre,
                     correoFicticio = correo,
+                    organizacion = organizacion,
+                    motivo = motivo,
                     mensaje = mensaje,
                     fecha = fecha ?: "2026-10-26",
                     idContenidoReferido = idProyectoReferido
@@ -80,6 +84,8 @@ class ContactoRepositoryTest {
                             id = it.solicitud.idSolicitud,
                             nombreContacto = it.solicitud.nombreContacto,
                             correoFicticio = it.solicitud.correoFicticio,
+                            organizacion = it.solicitud.organizacion,
+                            motivo = it.solicitud.motivo,
                             mensaje = it.solicitud.mensaje,
                             fecha = it.solicitud.fecha,
                             idContenidoReferido = it.solicitud.idContenidoReferido,
@@ -98,7 +104,9 @@ class ContactoRepositoryTest {
             correo = "ana.morales@empresa.cl",
             mensaje = "Interés en cotización y asesoría técnica",
             idProyectoReferido = 1,
-            fecha = "2026-10-26"
+            fecha = "2026-10-26",
+            organizacion = "Universidad",
+            motivo = "Cotización"
         )
 
         assertEquals(1L, id)
@@ -107,6 +115,8 @@ class ContactoRepositoryTest {
         assertNotNull(recuperada)
         assertEquals("Ana Morales", recuperada?.nombreContacto)
         assertEquals("ana.morales@empresa.cl", recuperada?.correoFicticio)
+        assertEquals("Universidad", recuperada?.organizacion)
+        assertEquals("Cotización", recuperada?.motivo)
         assertEquals(1, recuperada?.idContenidoReferido)
         assertEquals("Edificio Experimental de 6 Pisos", recuperada?.proyectoReferidoTitulo)
     }

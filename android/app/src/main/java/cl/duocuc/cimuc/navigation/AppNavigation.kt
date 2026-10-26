@@ -32,6 +32,7 @@ import cl.duocuc.cimuc.viewmodel.ContactoViewModel
 import cl.duocuc.cimuc.viewmodel.DetalleViewModel
 import cl.duocuc.cimuc.viewmodel.ExplorarViewModel
 import cl.duocuc.cimuc.viewmodel.InicioViewModel
+import androidx.compose.runtime.remember
 
 // Grafo de navegación declarativo conectando P-01 a P-07 (N1 / issue #1)
 @Composable
@@ -189,7 +190,7 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 val proyectoTitulo = detalleState.proyecto?.titulo.orEmpty()
                 LaunchedEffect(proyectoTitulo) {
                     if (proyectoTitulo.isNotEmpty()) {
-                        contactoViewModel.cargarProyectoReferido(proyectoTitulo)
+                        contactoViewModel.cargarProyectoReferido(proyectoTitulo, proyectoId)
                     }
                 }
 
@@ -197,7 +198,7 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 LaunchedEffect(contactoState) {
                     val exito = contactoState as? ContactoUiState.Exito ?: return@LaunchedEffect
                     navController.navigate(Screen.Confirmacion.create(exito.solicitudId.toInt())) {
-                        popUpTo(Screen.Contacto.route) { inclusive = true }
+                        popUpTo(Screen.Inicio.route) { inclusive = false }
                         launchSingleTop = true
                     }
                 }
@@ -207,6 +208,8 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                     onBack = { navController.popBackStack() },
                     onNombreChange = contactoViewModel::onNombreChange,
                     onCorreoChange = contactoViewModel::onCorreoChange,
+                    onOrganizacionChange = contactoViewModel::onOrganizacionChange,
+                    onMotivoChange = contactoViewModel::onMotivoChange,
                     onMensajeChange = contactoViewModel::onMensajeChange,
                     onEnviarClick = contactoViewModel::onEnviarClick
                 )
@@ -216,8 +219,13 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
             composable(
                 route = Screen.Confirmacion.route,
                 arguments = listOf(navArgument("solicitudId") { type = NavType.IntType })
-            ) {
+            ) { entry ->
+                val solicitudId = entry.arguments?.getInt("solicitudId") ?: 0
+                val solicitud by remember(solicitudId) {
+                    contactoRepository.getSolicitudById(solicitudId)
+                }.collectAsState(initial = null)
                 ConfirmacionScreen(
+                    solicitud = solicitud,
                     onVolverInicio = {
                         navController.navigate(Screen.Inicio.route) {
                             popUpTo(Screen.Inicio.route) { inclusive = true }
