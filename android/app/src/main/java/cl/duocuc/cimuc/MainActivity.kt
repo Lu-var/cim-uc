@@ -14,7 +14,10 @@ class MainActivity : ComponentActivity() {
         val application = application as CimApplication
         setContent {
             CimTheme {
-                AppNavigation(cimRepository = application.cimRepository)
+                AppNavigation(
+                    cimRepository = application.cimRepository,
+                    contactoRepository = application.contactoRepository
+                )
             }
         }
     }

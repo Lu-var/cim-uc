@@ -29,7 +29,7 @@ Orden lógico de ejecución y merge:
 
 ---
 
-## Rama 0 · `chore/decisions-previas` — 1 commit a main
+## Rama 0 · `chore/decisions-previas` — 1 commit a main ✅
 
 Un único commit que deja los acuerdos previos registrados:
 
@@ -47,7 +47,7 @@ Un único commit que deja los acuerdos previos registrados:
 
 ---
 
-## Rama 1 · `feat/datos-room` (P1–P6 · #18–#23) — sin dependencias
+## Rama 1 · `feat/datos-room` (P1–P6 · #18–#23) — sin dependencias ✅
 
 | # | Paso | Detalle |
 | :-- | :--- | :--- |
@@ -62,7 +62,7 @@ Cierre: verificar con Database Inspector, commits atómicos por issue, PR → ma
 
 ---
 
-## Rama 2 · `feat/navegacion-interface` (N1–N5 · #1–#5) — sin dependencias, paralela a rama 1
+## Rama 2 · `feat/navegacion-interface` (N1–N5 · #1–#5) — sin dependencias, paralela a rama 1 ✅
 
 | # | Paso | Detalle |
 | :-- | :--- | :--- |
@@ -76,7 +76,7 @@ Cierre: RNF-02 (contraste/accesibilidad), RNF-03 (`contentDescription`), RNF-08 
 
 ---
 
-## Rama 3 · `feat/validacion-mvvm` (V1–V4 · #12–#14) — conveniente tras mergear rama 2
+## Rama 3 · `feat/validacion-mvvm` (V1–V4 · #12–#14) — conveniente tras mergear rama 2 ✅
 
 | # | Paso | Detalle |
 | :-- | :--- | :--- |

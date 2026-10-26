@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.duocuc.cimuc.CimViewModelFactory
 import cl.duocuc.cimuc.data.repository.CimRepository
+import cl.duocuc.cimuc.data.repository.ContactoRepository
 import cl.duocuc.cimuc.ui.components.BottomNavBar
 import cl.duocuc.cimuc.ui.screens.actividades.ActividadesScreen
 import cl.duocuc.cimuc.ui.screens.confirmacion.ConfirmacionScreen
@@ -25,15 +27,17 @@ import cl.duocuc.cimuc.ui.screens.explorar.ExplorarScreen
 import cl.duocuc.cimuc.ui.screens.inicio.InicioScreen
 import cl.duocuc.cimuc.ui.screens.relacionados.RelacionadosScreen
 import cl.duocuc.cimuc.viewmodel.ActividadesViewModel
+import cl.duocuc.cimuc.viewmodel.ContactoUiState
+import cl.duocuc.cimuc.viewmodel.ContactoViewModel
 import cl.duocuc.cimuc.viewmodel.DetalleViewModel
 import cl.duocuc.cimuc.viewmodel.ExplorarViewModel
 import cl.duocuc.cimuc.viewmodel.InicioViewModel
 
 // Grafo de navegación declarativo conectando P-01 a P-07 (N1 / issue #1)
 @Composable
-fun AppNavigation(cimRepository: CimRepository) {
+fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepository) {
     val navController = rememberNavController()
-    val viewModelFactory = CimViewModelFactory(cimRepository)
+    val viewModelFactory = CimViewModelFactory(cimRepository, contactoRepository)
 
     Scaffold(
         bottomBar = {
@@ -160,16 +164,34 @@ fun AppNavigation(cimRepository: CimRepository) {
                 arguments = listOf(navArgument("proyectoId") { type = NavType.IntType })
             ) { entry ->
                 val proyectoId = entry.arguments?.getInt("proyectoId") ?: 0
-                val viewModel: DetalleViewModel = viewModel(factory = viewModelFactory)
-                LaunchedEffect(proyectoId) { viewModel.cargarProyecto(proyectoId) }
-                ContactoScreen(
-                    proyectoReferidoTitulo = viewModel.uiState.value.proyecto?.titulo.orEmpty(),
-                    onBack = { navController.popBackStack() },
-                    onEnviar = { _, _, _ ->
-                        // El guardado real en Room y la validación llegan con
-                        // ContactoViewModel (rama feat/validacion-mvvm, issues #10 y #13)
-                        navController.navigate(Screen.Confirmacion.create(0))
+                val detalleViewModel: DetalleViewModel = viewModel(factory = viewModelFactory)
+                val contactoViewModel: ContactoViewModel = viewModel(factory = viewModelFactory)
+                LaunchedEffect(proyectoId) { detalleViewModel.cargarProyecto(proyectoId) }
+
+                val contactoState by contactoViewModel.uiState.collectAsState()
+                val proyectoTitulo = detalleViewModel.uiState.value.proyecto?.titulo.orEmpty()
+                LaunchedEffect(proyectoTitulo) {
+                    if (proyectoTitulo.isNotEmpty()) {
+                        contactoViewModel.cargarProyectoReferido(proyectoTitulo)
                     }
+                }
+
+                // Tras el éxito (Exito con solicitudId) se avanza a P-07 (#13)
+                LaunchedEffect(contactoState) {
+                    val exito = contactoState as? ContactoUiState.Exito ?: return@LaunchedEffect
+                    navController.navigate(Screen.Confirmacion.create(exito.solicitudId.toInt())) {
+                        popUpTo(Screen.Contacto.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+
+                ContactoScreen(
+                    uiState = contactoState,
+                    onBack = { navController.popBackStack() },
+                    onNombreChange = contactoViewModel::onNombreChange,
+                    onCorreoChange = contactoViewModel::onCorreoChange,
+                    onMensajeChange = contactoViewModel::onMensajeChange,
+                    onEnviarClick = contactoViewModel::onEnviarClick
                 )
             }
 
