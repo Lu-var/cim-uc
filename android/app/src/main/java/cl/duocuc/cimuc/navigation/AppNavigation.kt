@@ -319,8 +319,9 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
     }
 }
 
-// Configurar solo con una dirección institucional confirmada por el equipo.
-private const val DESTINATARIO_INSTITUCIONAL = ""
+// Destinatario ficticio: docs/01 exige datos ficticios y prohíbe usar datos
+// reales de CIM UC. Si se reemplaza, que siga siendo una dirección de ejemplo.
+private const val DESTINATARIO_INSTITUCIONAL = "contacto@cimuc.example"
 
 private fun compartirProyecto(context: Context, proyecto: Proyecto) {
     val contenido = buildString {
