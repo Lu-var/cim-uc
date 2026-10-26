@@ -1,5 +1,10 @@
 package cl.duocuc.cimuc.ui.screens.contacto
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -64,12 +69,20 @@ fun ContactoScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                CircularProgressIndicator()
-                Text(
-                    text = "Enviando solicitud…",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+                AnimatedVisibility(
+                    visible = true,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Enviando solicitud…",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+                }
             }
 
             is ContactoUiState.Error -> FormularioContacto(
@@ -130,9 +143,7 @@ private fun FormularioContacto(
             onValueChange = onNombreChange,
             label = { Text("Nombre") },
             isError = uiState.errorNombre != null,
-            supportingText = {
-                uiState.errorNombre?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            },
+            supportingText = { ErrorSupportingText(uiState.errorNombre) },
             trailingIcon = { IconEstadoCampo(uiState.errorNombre, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier
@@ -146,9 +157,7 @@ private fun FormularioContacto(
             onValueChange = onCorreoChange,
             label = { Text("Correo (ficticio)") },
             isError = uiState.errorCorreo != null,
-            supportingText = {
-                uiState.errorCorreo?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            },
+            supportingText = { ErrorSupportingText(uiState.errorCorreo) },
             trailingIcon = { IconEstadoCampo(uiState.errorCorreo, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier
@@ -162,7 +171,7 @@ private fun FormularioContacto(
             onValueChange = onOrganizacionChange,
             label = { Text("Organización") },
             isError = uiState.errorOrganizacion != null,
-            supportingText = { uiState.errorOrganizacion?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+            supportingText = { ErrorSupportingText(uiState.errorOrganizacion) },
             trailingIcon = { IconEstadoCampo(uiState.errorOrganizacion, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
@@ -173,7 +182,7 @@ private fun FormularioContacto(
             onValueChange = onMotivoChange,
             label = { Text("Motivo") },
             isError = uiState.errorMotivo != null,
-            supportingText = { uiState.errorMotivo?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+            supportingText = { ErrorSupportingText(uiState.errorMotivo) },
             trailingIcon = { IconEstadoCampo(uiState.errorMotivo, uiState.intentoEnviado) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
@@ -184,9 +193,7 @@ private fun FormularioContacto(
             onValueChange = onMensajeChange,
             label = { Text("Mensaje") },
             isError = uiState.errorMensaje != null,
-            supportingText = {
-                uiState.errorMensaje?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            },
+            supportingText = { ErrorSupportingText(uiState.errorMensaje) },
             trailingIcon = { IconEstadoCampo(uiState.errorMensaje, uiState.intentoEnviado) },
             minLines = 4,
             modifier = Modifier
@@ -210,5 +217,16 @@ private fun IconEstadoCampo(error: String?, mostrarCorrecto: Boolean) {
     when {
         error != null -> Icon(Icons.Filled.Error, contentDescription = "Campo con error", tint = MaterialTheme.colorScheme.error)
         mostrarCorrecto -> Icon(Icons.Filled.CheckCircle, contentDescription = "Campo válido", tint = MaterialTheme.colorScheme.primary)
+    }
+}
+
+@Composable
+private fun ErrorSupportingText(error: String?) {
+    AnimatedVisibility(
+        visible = error != null,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
+    ) {
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }

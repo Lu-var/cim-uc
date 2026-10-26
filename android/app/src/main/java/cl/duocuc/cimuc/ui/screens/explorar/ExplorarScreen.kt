@@ -181,7 +181,8 @@ fun ExplorarScreen(
                         items(uiState.proyectos, key = { it.id }) { proyecto ->
                             ProyectoCard(
                                 proyecto = proyecto,
-                                onClick = { onProyectoClick(proyecto.id) }
+                                onClick = { onProyectoClick(proyecto.id) },
+                                modifier = Modifier.animateItem()
                             )
                         }
                     }
