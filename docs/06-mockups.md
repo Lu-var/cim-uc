@@ -35,7 +35,9 @@
 **Componentes (de arriba a abajo):**
 1. Barra superior con el título "Explorar".
 2. Campo de búsqueda con botón para borrar el texto.
-3. Fila de etiquetas de tipo: Proyectos, Capacidades I+D, Integrantes, Publicaciones y Actividades.
+3. Fila de etiquetas de tipo: Proyectos, Capacidades I+D, Integrantes y Publicaciones. Actividades
+   queda fuera de Explorar a propósito: su única entrada es P-05 (tarjeta de Inicio y barra inferior),
+   para no duplicar la pantalla.
 4. Selectores de área temática y de año.
 5. Etiquetas de filtros activos, cada una con una "x", y el botón "Limpiar todo".
 6. Contador de resultados (por ejemplo, "12 resultados").
@@ -83,7 +85,7 @@
 
 **Datos del modelo:** Proyecto (titulo, descripcion, anio, estado) y AreaTematica (nombre, obtenida por id_area).
 
-**Variante para otros tipos:** al abrir una capacidad, un integrante, una publicación o una actividad desde P-02 o P-04, esta misma pantalla muestra el detalle de ese contenido, con su título y sus atributos en lugar de los del proyecto, y sin los botones de relacionados ni de contacto.
+**Variante para otros tipos:** al abrir una capacidad, un integrante o una publicación desde P-02, esta misma pantalla muestra el detalle de ese contenido, con su título y sus atributos en lugar de los del proyecto, y sin los botones de relacionados ni de contacto. Las actividades no pasan por aquí: se listan y detallan en P-05.
 
 ## P-04 · Contenidos relacionados
 
