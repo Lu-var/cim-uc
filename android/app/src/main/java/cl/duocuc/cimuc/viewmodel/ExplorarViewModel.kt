@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duocuc.cimuc.data.repository.CimRepository
 import cl.duocuc.cimuc.domain.model.AreaTematica
-import cl.duocuc.cimuc.domain.model.Proyecto
+import cl.duocuc.cimuc.domain.model.Contenido
+import cl.duocuc.cimuc.domain.model.TipoContenido
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,12 +15,13 @@ import java.text.Normalizer
 
 data class ExplorarUiState(
     val query: String = "",
+    val selectedTipo: TipoContenido? = null,
     val selectedAreaId: Int? = null,
     val selectedAnio: Int? = null,
     val selectedEstado: String? = null,
     val areas: List<AreaTematica> = emptyList(),
     val aniosDisponibles: List<Int> = emptyList(),
-    val proyectos: List<Proyecto> = emptyList(),
+    val contenidos: List<Contenido> = emptyList(),
     val totalCoincidencias: Int = 0,
     val isLoading: Boolean = false,
     val isEmpty: Boolean = false
@@ -27,6 +29,7 @@ data class ExplorarUiState(
 
 private data class FiltroCriterios(
     val query: String,
+    val tipo: TipoContenido?,
     val areaId: Int?,
     val anio: Int?,
     val estado: String?
@@ -35,55 +38,61 @@ private data class FiltroCriterios(
 class ExplorarViewModel(private val repository: CimRepository) : ViewModel() {
 
     private val _query = MutableStateFlow("")
+    private val _selectedTipo = MutableStateFlow<TipoContenido?>(null)
     private val _selectedAreaId = MutableStateFlow<Int?>(null)
     private val _selectedAnio = MutableStateFlow<Int?>(null)
     private val _selectedEstado = MutableStateFlow<String?>(null)
+    private var tipoInicialAplicado = false
 
     private val _filtros = combine(
         _query,
+        _selectedTipo,
         _selectedAreaId,
         _selectedAnio,
         _selectedEstado
-    ) { query, areaId, anio, estado ->
-        FiltroCriterios(query, areaId, anio, estado)
+    ) { query, tipo, areaId, anio, estado ->
+        FiltroCriterios(query, tipo, areaId, anio, estado)
     }
 
     val uiState: StateFlow<ExplorarUiState> = combine(
         _filtros,
-        repository.getProyectos(),
-        repository.getAreasTematicas(),
-        repository.getAniosDisponibles()
-    ) { filtros, todosProyectos, areas, anios ->
+        repository.getContenidos(),
+        repository.getAreasTematicas()
+    ) { filtros, contenidos, areas ->
 
         val normalizedQuery = removeDiacritics(filtros.query.trim().lowercase())
 
-        val filtrados = todosProyectos.filter { proyecto ->
+        val filtrados = contenidos.filter { contenido ->
             val matchesQuery = if (normalizedQuery.isEmpty()) {
                 true
             } else {
-                val tituloNorm = removeDiacritics(proyecto.titulo.lowercase())
-                val descNorm = removeDiacritics(proyecto.descripcion.lowercase())
-                val areaNorm = removeDiacritics(proyecto.areaNombre.lowercase())
-                tituloNorm.contains(normalizedQuery) ||
-                        descNorm.contains(normalizedQuery) ||
-                        areaNorm.contains(normalizedQuery)
+                listOf(contenido.titulo, contenido.descripcion, contenido.areaNombre, contenido.meta)
+                    .any { removeDiacritics(it.lowercase()).contains(normalizedQuery) }
             }
 
-            val matchesArea = filtros.areaId == null || proyecto.areaId == filtros.areaId
-            val matchesAnio = filtros.anio == null || proyecto.anio == filtros.anio
-            val matchesEstado = filtros.estado == null || proyecto.estado.equals(filtros.estado, ignoreCase = true)
+            // Filtros estrictos: si el tipo no tiene el atributo, no pasa el filtro (HU-01, HU-03)
+            val matchesTipo = filtros.tipo == null || contenido.tipo == filtros.tipo
+            val matchesArea = filtros.areaId == null || contenido.areaId == filtros.areaId
+            val matchesAnio = filtros.anio == null || contenido.anio == filtros.anio
+            val matchesEstado = filtros.estado == null ||
+                contenido.estado.equals(filtros.estado, ignoreCase = true)
 
-            matchesQuery && matchesArea && matchesAnio && matchesEstado
-        }
+            matchesQuery && matchesTipo && matchesArea && matchesAnio && matchesEstado
+        }.sortedWith(
+            compareBy<Contenido> { it.anio == null }
+                .thenByDescending { it.anio ?: 0 }
+                .thenBy { it.titulo }
+        )
 
         ExplorarUiState(
             query = filtros.query,
+            selectedTipo = filtros.tipo,
             selectedAreaId = filtros.areaId,
             selectedAnio = filtros.anio,
             selectedEstado = filtros.estado,
             areas = areas,
-            aniosDisponibles = anios,
-            proyectos = filtrados,
+            aniosDisponibles = contenidos.mapNotNull { it.anio }.distinct().sortedDescending(),
+            contenidos = filtrados,
             totalCoincidencias = filtrados.size,
             isLoading = false,
             isEmpty = filtrados.isEmpty()
@@ -96,6 +105,18 @@ class ExplorarViewModel(private val repository: CimRepository) : ViewModel() {
 
     fun onQueryChanged(newQuery: String) {
         _query.value = newQuery
+    }
+
+    // Tipo que llega preseleccionado desde P-01; se aplica una sola vez por ViewModel
+    fun aplicarTipoInicial(tipo: TipoContenido?) {
+        if (tipoInicialAplicado) return
+        tipoInicialAplicado = true
+        if (tipo != null) _selectedTipo.value = tipo
+    }
+
+    fun onTipoSelected(tipo: TipoContenido?) {
+        tipoInicialAplicado = true
+        _selectedTipo.value = if (_selectedTipo.value == tipo) null else tipo
     }
 
     fun onAreaSelected(areaId: Int?) {
@@ -111,7 +132,9 @@ class ExplorarViewModel(private val repository: CimRepository) : ViewModel() {
     }
 
     fun limpiarFiltros() {
+        tipoInicialAplicado = true
         _query.value = ""
+        _selectedTipo.value = null
         _selectedAreaId.value = null
         _selectedAnio.value = null
         _selectedEstado.value = null
