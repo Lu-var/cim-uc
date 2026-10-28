@@ -270,4 +270,47 @@ class ExplorarViewModelTest {
 
         job.cancel()
     }
+
+    @Test
+    fun filtroPorEstado_noReduceLosEstadosDisponibles() = runTest {
+        val viewModel = ExplorarViewModel(fakeRepo)
+        val job = backgroundScope.launch(testDispatcher) {
+            viewModel.uiState.collect {}
+        }
+        advanceUntilIdle()
+
+        // El catálogo se deriva del flujo sin filtrar, así que trae los dos estados de los proyectos
+        assertEquals(listOf("En curso", "Finalizado"), viewModel.uiState.value.estadosDisponibles)
+
+        viewModel.onEstadoSelected("Finalizado")
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.value.totalCoincidencias)
+        // Si el catálogo se derivara de la lista filtrada quedaría solo "Finalizado"
+        // y el usuario no podría volver a "En curso" desde los chips
+        assertEquals(2, viewModel.uiState.value.estadosDisponibles.size)
+
+        job.cancel()
+    }
+
+    @Test
+    fun filtroPorEstado_seleccionarElMismoEstadoDosVeces_loDeselecciona() = runTest {
+        val viewModel = ExplorarViewModel(fakeRepo)
+        val job = backgroundScope.launch(testDispatcher) {
+            viewModel.uiState.collect {}
+        }
+        advanceUntilIdle()
+
+        viewModel.onEstadoSelected("En curso")
+        advanceUntilIdle()
+        assertEquals("En curso", viewModel.uiState.value.selectedEstado)
+        assertEquals(2, viewModel.uiState.value.totalCoincidencias)
+
+        viewModel.onEstadoSelected("En curso")
+        advanceUntilIdle()
+        assertEquals(null, viewModel.uiState.value.selectedEstado)
+        assertEquals(6, viewModel.uiState.value.totalCoincidencias)
+
+        job.cancel()
+    }
 }

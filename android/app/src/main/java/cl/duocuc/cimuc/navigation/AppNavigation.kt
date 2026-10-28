@@ -158,6 +158,7 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                     onTipoSelected = viewModel::onTipoSelected,
                     onAreaSelected = viewModel::onAreaSelected,
                     onAnioSelected = viewModel::onAnioSelected,
+                    onEstadoSelected = viewModel::onEstadoSelected,
                     onLimpiarFiltros = viewModel::limpiarFiltros,
                     onContenidoClick = { tipo, id ->
                         navController.navigate(Screen.Detalle.create(tipo, id))

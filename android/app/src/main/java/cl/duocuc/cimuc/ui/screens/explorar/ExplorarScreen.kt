@@ -47,6 +47,7 @@ fun ExplorarScreen(
     onTipoSelected: (TipoContenido?) -> Unit,
     onAreaSelected: (Int?) -> Unit,
     onAnioSelected: (Int?) -> Unit,
+    onEstadoSelected: (String?) -> Unit,
     onLimpiarFiltros: () -> Unit,
     onContenidoClick: (TipoContenido, Int) -> Unit
 ) {
@@ -118,7 +119,6 @@ fun ExplorarScreen(
                     )
                 }
             }
-
             // Selector de año
             Text(
                 text = "Año",
@@ -139,12 +139,34 @@ fun ExplorarScreen(
                 }
             }
 
+            //Selector de estado
+            Text(
+                text = "Estado",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+            )
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                items(uiState.estadosDisponibles, key = { it }) { estado ->
+                    FilterChip(
+                        selected = estado == uiState.selectedEstado,
+                        onClick = { onEstadoSelected(estado) },
+                        label = { Text(estado) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    )
+                }
+            }
+
             // Etiquetas de filtros activos con "x" y botón "Limpiar todo"
             val hayFiltros = uiState.selectedTipo != null ||
-                uiState.selectedAreaId != null ||
-                uiState.selectedAnio != null
+                    uiState.selectedAreaId != null ||
+                    uiState.selectedAnio != null ||
+                    uiState.selectedEstado != null
             if (hayFiltros || uiState.query.isNotEmpty()) {
-                // FlowRow: con tipo + área + año las etiquetas deben envolver, no empujar "Limpiar todo" fuera
+                // FlowRow: con tipo + área + año + estado las etiquetas deben envolver, no empujar "Limpiar todo" fuera
                 FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,13 +175,29 @@ fun ExplorarScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     uiState.selectedTipo?.let { tipo ->
-                        FiltroActivoChip(etiqueta = tipo.etiquetaPlural) { onTipoSelected(null) }
+                        FiltroActivoChip(etiqueta = tipo.etiquetaPlural) {
+                            onTipoSelected(
+                                null
+                            )
+                        }
                     }
-                    uiState.areas.find { it.id == uiState.selectedAreaId }?.let { area ->
-                        FiltroActivoChip(etiqueta = area.nombre) { onAreaSelected(null) }
-                    }
+                    uiState.areas.find { it.id == uiState.selectedAreaId }
+                        ?.let { area ->
+                            FiltroActivoChip(etiqueta = area.nombre) {
+                                onAreaSelected(
+                                    null
+                                )
+                            }
+                        }
                     uiState.selectedAnio?.let { anio ->
-                        FiltroActivoChip(etiqueta = anio.toString()) { onAnioSelected(null) }
+                        FiltroActivoChip(etiqueta = anio.toString()) {
+                            onAnioSelected(
+                                null
+                            )
+                        }
+                    }
+                    uiState.selectedEstado?.let { estado ->
+                        FiltroActivoChip(etiqueta = estado) { onEstadoSelected(null) }
                     }
                     TextButton(onClick = onLimpiarFiltros) {
                         Text("Limpiar todo")
@@ -183,6 +221,7 @@ fun ExplorarScreen(
                             .align(Alignment.CenterHorizontally)
                     )
                 }
+
                 uiState.isEmpty -> {
                     // Estado vacío
                     Column(
@@ -202,6 +241,7 @@ fun ExplorarScreen(
                         }
                     }
                 }
+
                 else -> {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
