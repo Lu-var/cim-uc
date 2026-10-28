@@ -44,11 +44,6 @@ open class CimRepository(private val database: AppDatabase? = null) {
         }
     }
 
-    open fun getAniosDisponibles(): Flow<List<Int>> {
-        val db = database ?: return emptyFlow()
-        return db.proyectoDao().getAniosDisponibles()
-    }
-
     open fun getActividades(): Flow<List<Actividad>> {
         val db = database ?: return emptyFlow()
         return db.actividadDao().getAllWithArea().map { list ->

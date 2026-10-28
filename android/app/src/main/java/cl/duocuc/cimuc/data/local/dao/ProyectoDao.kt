@@ -45,9 +45,6 @@ interface ProyectoDao {
         estado: String?
     ): Flow<List<ProyectoConDetalles>>
 
-    @Query("SELECT DISTINCT anio FROM proyecto ORDER BY anio DESC")
-    fun getAniosDisponibles(): Flow<List<Int>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(proyectos: List<ProyectoEntity>)
 

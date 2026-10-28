@@ -15,12 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cl.duocuc.cimuc.domain.model.Proyecto
+import cl.duocuc.cimuc.domain.model.Contenido
 
-// Tarjeta reutilizable de proyecto (RNF-08: mismos componentes en todas las pantallas)
+// Tarjeta reutilizable de contenido: proyecto, capacidad, integrante o publicación (HU-01, RNF-08)
 @Composable
-fun ProyectoCard(
-    proyecto: Proyecto,
+fun ContenidoCard(
+    contenido: Contenido,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -41,23 +41,27 @@ fun ProyectoCard(
             ) {
                 AssistChip(
                     onClick = {},
-                    label = { Text("Proyecto") }
+                    label = { Text(contenido.tipo.etiquetaSingular) }
                 )
+                if (contenido.areaNombre.isNotEmpty()) {
+                    Text(
+                        text = contenido.areaNombre,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Text(
+                text = contenido.titulo,
+                style = MaterialTheme.typography.titleMedium
+            )
+            if (contenido.meta.isNotEmpty()) {
                 Text(
-                    text = proyecto.areaNombre,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = contenido.meta,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Text(
-                text = proyecto.titulo,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = "Año ${proyecto.anio} · ${proyecto.estado}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

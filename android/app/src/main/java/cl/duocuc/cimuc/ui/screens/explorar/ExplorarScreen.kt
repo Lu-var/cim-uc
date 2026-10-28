@@ -32,20 +32,22 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import cl.duocuc.cimuc.ui.components.ProyectoCard
+import cl.duocuc.cimuc.domain.model.TipoContenido
+import cl.duocuc.cimuc.ui.components.ContenidoCard
 import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 import cl.duocuc.cimuc.viewmodel.ExplorarUiState
 
-// P-02 Explorar: búsqueda, filtros combinables y listado (HU-01, HU-02, HU-03, issue #4)
+// P-02 Explorar: búsqueda, filtros combinables y listado por tipo (HU-01, HU-02, HU-03, issue #4)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplorarScreen(
     uiState: ExplorarUiState,
     onQueryChanged: (String) -> Unit,
+    onTipoSelected: (TipoContenido?) -> Unit,
     onAreaSelected: (Int?) -> Unit,
     onAnioSelected: (Int?) -> Unit,
     onLimpiarFiltros: () -> Unit,
-    onProyectoClick: (Int) -> Unit
+    onContenidoClick: (TipoContenido, Int) -> Unit
 ) {
     Scaffold(
         topBar = { TopAppBarCommon(title = "Explorar") }
@@ -59,7 +61,7 @@ fun ExplorarScreen(
             OutlinedTextField(
                 value = uiState.query,
                 onValueChange = onQueryChanged,
-                placeholder = { Text("Buscar proyectos…") },
+                placeholder = { Text("Buscar proyectos, capacidades…") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = {
                     if (uiState.query.isNotEmpty()) {
@@ -73,8 +75,28 @@ fun ExplorarScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .heightIn(min = 48.dp)
-                    .semantics { contentDescription = "Campo de búsqueda de proyectos" }
+                    .semantics { contentDescription = "Campo de búsqueda de contenidos" }
             )
+
+            // Selector de tipo de contenido
+            Text(
+                text = "Tipo",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+            )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                items(TipoContenido.entries, key = { it.ruta }) { tipo ->
+                    FilterChip(
+                        selected = tipo == uiState.selectedTipo,
+                        onClick = { onTipoSelected(tipo) },
+                        label = { Text(tipo.etiquetaPlural) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    )
+                }
+            }
 
             // Selector de área temática
             Text(
@@ -117,7 +139,9 @@ fun ExplorarScreen(
             }
 
             // Etiquetas de filtros activos con "x" y botón "Limpiar todo"
-            val hayFiltros = uiState.selectedAreaId != null || uiState.selectedAnio != null
+            val hayFiltros = uiState.selectedTipo != null ||
+                uiState.selectedAreaId != null ||
+                uiState.selectedAnio != null
             if (hayFiltros || uiState.query.isNotEmpty()) {
                 Row(
                     modifier = Modifier
@@ -126,6 +150,9 @@ fun ExplorarScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    uiState.selectedTipo?.let { tipo ->
+                        FiltroActivoChip(etiqueta = tipo.etiquetaPlural) { onTipoSelected(null) }
+                    }
                     uiState.areas.find { it.id == uiState.selectedAreaId }?.let { area ->
                         FiltroActivoChip(etiqueta = area.nombre) { onAreaSelected(null) }
                     }
@@ -178,10 +205,13 @@ fun ExplorarScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(uiState.proyectos, key = { it.id }) { proyecto ->
-                            ProyectoCard(
-                                proyecto = proyecto,
-                                onClick = { onProyectoClick(proyecto.id) },
+                        items(
+                            items = uiState.contenidos,
+                            key = { "${it.tipo.ruta}-${it.id}" }
+                        ) { contenido ->
+                            ContenidoCard(
+                                contenido = contenido,
+                                onClick = { onContenidoClick(contenido.tipo, contenido.id) },
                                 modifier = Modifier.animateItem()
                             )
                         }
