@@ -2,8 +2,9 @@ package cl.duocuc.cimuc.ui.screens.explorar
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -38,7 +39,7 @@ import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 import cl.duocuc.cimuc.viewmodel.ExplorarUiState
 
 // P-02 Explorar: búsqueda, filtros combinables y listado por tipo (HU-01, HU-02, HU-03, issue #4)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExplorarScreen(
     uiState: ExplorarUiState,
@@ -143,12 +144,13 @@ fun ExplorarScreen(
                 uiState.selectedAreaId != null ||
                 uiState.selectedAnio != null
             if (hayFiltros || uiState.query.isNotEmpty()) {
-                Row(
+                // FlowRow: con tipo + área + año las etiquetas deben envolver, no empujar "Limpiar todo" fuera
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     uiState.selectedTipo?.let { tipo ->
                         FiltroActivoChip(etiqueta = tipo.etiquetaPlural) { onTipoSelected(null) }
