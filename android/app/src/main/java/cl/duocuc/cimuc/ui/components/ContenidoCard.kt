@@ -55,9 +55,14 @@ fun ContenidoCard(
                 text = contenido.titulo,
                 style = MaterialTheme.typography.titleMedium
             )
-            if (contenido.meta.isNotEmpty()) {
+            // Línea secundaria: año y estado/tipo/rol según el tipo (mockup P-02)
+            val secundaria = listOfNotNull(
+                contenido.anio?.toString(),
+                contenido.meta.ifBlank { null }
+            ).joinToString(" · ")
+            if (secundaria.isNotEmpty()) {
                 Text(
-                    text = contenido.meta,
+                    text = secundaria,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
