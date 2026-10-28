@@ -20,10 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cl.duocuc.cimuc.domain.model.TipoContenido
 import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 import cl.duocuc.cimuc.viewmodel.DetalleUiState
 
-// P-03 Detalle de proyecto (HU-04, HU-06, issue #4)
+// P-03 Detalle: del proyecto (HU-04, HU-06) y de cualquier otro tipo abierto desde P-02 (HU-01)
 @Composable
 fun DetalleScreen(
     uiState: DetalleUiState,
@@ -34,17 +35,28 @@ fun DetalleScreen(
     onRedactarCorreo: () -> Unit,
     onContactar: () -> Unit
 ) {
+    val proyecto = uiState.proyecto
+    val contenido = uiState.contenido
+
     Scaffold(
-        topBar = { TopAppBarCommon(title = "Proyecto", onBack = onBack) },
+        topBar = {
+            TopAppBarCommon(
+                title = uiState.tipo?.etiquetaSingular ?: "Contenido",
+                onBack = onBack
+            )
+        },
         bottomBar = {
-            Button(
-                onClick = onContactar,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .heightIn(min = 48.dp)
-            ) {
-                Text("Contactar a CIM UC")
+            // El contacto solo aplica al proyecto (mockups P-03, variante por tipo)
+            if (proyecto != null) {
+                Button(
+                    onClick = onContactar,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .heightIn(min = 48.dp)
+                ) {
+                    Text("Contactar a CIM UC")
+                }
             }
         }
     ) { padding ->
@@ -67,8 +79,7 @@ fun DetalleScreen(
                     modifier = Modifier.padding(24.dp)
                 )
             }
-            uiState.proyecto != null -> {
-                val proyecto = uiState.proyecto
+            contenido != null -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -78,57 +89,78 @@ fun DetalleScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = proyecto.titulo,
+                        text = contenido.titulo,
                         style = MaterialTheme.typography.headlineSmall
                     )
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AssistChip(onClick = {}, label = { Text(proyecto.anio.toString()) })
-                        AssistChip(onClick = {}, label = { Text(proyecto.estado) })
-                        if (proyecto.areaNombre.isNotEmpty()) {
-                            AssistChip(onClick = {}, label = { Text(proyecto.areaNombre) })
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(contenido.tipo.etiquetaSingular) }
+                        )
+                        contenido.anio?.let { anio ->
+                            AssistChip(onClick = {}, label = { Text(anio.toString()) })
+                        }
+                        contenido.estado?.takeIf { it.isNotBlank() }?.let { estado ->
+                            AssistChip(onClick = {}, label = { Text(estado) })
+                        }
+                        if (contenido.areaNombre.isNotEmpty()) {
+                            AssistChip(onClick = {}, label = { Text(contenido.areaNombre) })
                         }
                     }
 
                     Text(
-                        text = proyecto.descripcion,
+                        text = contenido.descripcion,
                         style = MaterialTheme.typography.bodyLarge
                     )
 
-                    OutlinedButton(
-                        onClick = onCompartir,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
+                    // Rol y organización del integrante, o tipo de publicación
+                    if (contenido.tipo in setOf(TipoContenido.INTEGRANTE, TipoContenido.PUBLICACION) &&
+                        contenido.meta.isNotEmpty()
                     ) {
-                        Text("Compartir proyecto")
+                        Text(
+                            text = contenido.meta,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
-                    OutlinedButton(
-                        onClick = onRedactarCorreo,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                    ) {
-                        Text("Redactar correo")
-                    }
+                    if (proyecto != null) {
+                        OutlinedButton(
+                            onClick = onCompartir,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                        ) {
+                            Text("Compartir proyecto")
+                        }
 
-                    OutlinedButton(
-                        onClick = onVerRelacionados,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                    ) {
-                        Text("Ver contenidos relacionados")
-                    }
+                        OutlinedButton(
+                            onClick = onRedactarCorreo,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                        ) {
+                            Text("Redactar correo")
+                        }
 
-                    OutlinedButton(
-                        onClick = { onVerActividadesDelArea(proyecto.areaId) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                    ) {
-                        Text("Ver actividades de esta área")
+                        OutlinedButton(
+                            onClick = onVerRelacionados,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                        ) {
+                            Text("Ver contenidos relacionados")
+                        }
+
+                        OutlinedButton(
+                            onClick = { onVerActividadesDelArea(proyecto.areaId) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                        ) {
+                            Text("Ver actividades de esta área")
+                        }
                     }
                 }
             }

@@ -34,9 +34,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cl.duocuc.cimuc.domain.model.Conteos
+import cl.duocuc.cimuc.domain.model.TipoContenido
 import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 
+// Actividades se mantiene fuera de Explorar: su acceso abre P-05 (tipo nulo)
 private data class AccesoTipo(
+    val tipo: TipoContenido?,
     val etiqueta: String,
     val conteo: Int,
     val icono: ImageVector
@@ -47,15 +50,15 @@ private data class AccesoTipo(
 fun InicioScreen(
     conteos: Conteos,
     onBuscar: () -> Unit,
-    onTipoSeleccionado: (String) -> Unit,
+    onTipoSeleccionado: (TipoContenido) -> Unit,
     onActividades: () -> Unit
 ) {
     val accesos = listOf(
-        AccesoTipo("Proyectos", conteos.proyectos, Icons.Filled.Hub),
-        AccesoTipo("Capacidades I+D", conteos.capacidades, Icons.Filled.WorkspacePremium),
-        AccesoTipo("Integrantes", conteos.integrantes, Icons.Filled.Groups),
-        AccesoTipo("Publicaciones", conteos.publicaciones, Icons.Filled.Search),
-        AccesoTipo("Actividades", conteos.actividades, Icons.Filled.Event)
+        AccesoTipo(TipoContenido.PROYECTO, TipoContenido.PROYECTO.etiquetaPlural, conteos.proyectos, Icons.Filled.Hub),
+        AccesoTipo(TipoContenido.CAPACIDAD, TipoContenido.CAPACIDAD.etiquetaPlural, conteos.capacidades, Icons.Filled.WorkspacePremium),
+        AccesoTipo(TipoContenido.INTEGRANTE, TipoContenido.INTEGRANTE.etiquetaPlural, conteos.integrantes, Icons.Filled.Groups),
+        AccesoTipo(TipoContenido.PUBLICACION, TipoContenido.PUBLICACION.etiquetaPlural, conteos.publicaciones, Icons.Filled.Search),
+        AccesoTipo(null, "Actividades", conteos.actividades, Icons.Filled.Event)
     )
 
     Scaffold(
@@ -107,8 +110,8 @@ fun InicioScreen(
             accesos.forEach { acceso ->
                 Card(
                     onClick = {
-                        if (acceso.etiqueta == "Actividades") onActividades()
-                        else onTipoSeleccionado(acceso.etiqueta)
+                        val tipo = acceso.tipo
+                        if (tipo == null) onActividades() else onTipoSeleccionado(tipo)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
