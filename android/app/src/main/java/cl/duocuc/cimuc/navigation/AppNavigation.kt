@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,6 +32,7 @@ import cl.duocuc.cimuc.CimViewModelFactory
 import cl.duocuc.cimuc.data.repository.CimRepository
 import cl.duocuc.cimuc.data.repository.ContactoRepository
 import cl.duocuc.cimuc.domain.model.Proyecto
+import cl.duocuc.cimuc.domain.model.TipoContenido
 import cl.duocuc.cimuc.ui.components.BottomNavBar
 import cl.duocuc.cimuc.ui.screens.actividades.ActividadesScreen
 import cl.duocuc.cimuc.ui.screens.confirmacion.ConfirmacionScreen
@@ -118,8 +120,12 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 val conteos by viewModel.conteos.collectAsState()
                 InicioScreen(
                     conteos = conteos,
-                    onBuscar = { navController.navigate(Screen.Explorar.route) },
-                    onTipoSeleccionado = { navController.navigate(Screen.Explorar.route) },
+                    onBuscar = {
+                        navController.navigate(Screen.Explorar.create()) { abrirDesdeInicio() }
+                    },
+                    onTipoSeleccionado = { tipo ->
+                        navController.navigate(Screen.Explorar.create(tipo)) { abrirDesdeInicio() }
+                    },
                     onActividades = {
                         navController.navigate(Screen.Actividades.create()) {
                             popUpTo(Screen.Inicio.route) { saveState = true }
@@ -130,30 +136,46 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                 )
             }
 
-            // P-02 Explorar
-            composable(Screen.Explorar.route) {
+            // P-02 Explorar: el tipo llega como argumento desde P-01 (HU-01)
+            composable(
+                route = Screen.Explorar.route,
+                arguments = listOf(
+                    navArgument("tipo") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    }
+                )
+            ) { entry ->
+                val tipoInicial = TipoContenido.fromRuta(entry.arguments?.getString("tipo"))
                 val viewModel: ExplorarViewModel = viewModel(factory = viewModelFactory)
+                LaunchedEffect(tipoInicial) { viewModel.aplicarTipoInicial(tipoInicial) }
                 val uiState by viewModel.uiState.collectAsState()
                 ExplorarScreen(
                     uiState = uiState,
                     onQueryChanged = viewModel::onQueryChanged,
+                    onTipoSelected = viewModel::onTipoSelected,
                     onAreaSelected = viewModel::onAreaSelected,
                     onAnioSelected = viewModel::onAnioSelected,
                     onLimpiarFiltros = viewModel::limpiarFiltros,
-                    onProyectoClick = { id ->
-                        navController.navigate(Screen.Detalle.create(id))
+                    onContenidoClick = { tipo, id ->
+                        navController.navigate(Screen.Detalle.create(tipo, id))
                     }
                 )
             }
 
-            // P-03 Detalle de proyecto
+            // P-03 Detalle del contenido abierto en P-02
             composable(
                 route = Screen.Detalle.route,
-                arguments = listOf(navArgument("proyectoId") { type = NavType.IntType })
+                arguments = listOf(
+                    navArgument("tipo") { type = NavType.StringType },
+                    navArgument("contenidoId") { type = NavType.IntType }
+                )
             ) { entry ->
-                val proyectoId = entry.arguments?.getInt("proyectoId") ?: 0
+                val tipo = TipoContenido.fromRuta(entry.arguments?.getString("tipo"))
+                    ?: TipoContenido.PROYECTO
+                val contenidoId = entry.arguments?.getInt("contenidoId") ?: 0
                 val viewModel: DetalleViewModel = viewModel(factory = viewModelFactory)
-                LaunchedEffect(proyectoId) { viewModel.cargarProyecto(proyectoId) }
+                LaunchedEffect(tipo, contenidoId) { viewModel.cargarContenido(tipo, contenidoId) }
                 val uiState by viewModel.uiState.collectAsState()
                 DetalleScreen(
                     uiState = uiState,
@@ -172,7 +194,7 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                         }
                     },
                     onVerRelacionados = {
-                        navController.navigate(Screen.Relacionados.create(proyectoId))
+                        navController.navigate(Screen.Relacionados.create(contenidoId))
                     },
                     onVerActividadesDelArea = { areaId ->
                         navController.navigate(Screen.Actividades.create(areaId)) {
@@ -182,7 +204,7 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
                         }
                     },
                     onContactar = {
-                        navController.navigate(Screen.Contacto.create(proyectoId))
+                        navController.navigate(Screen.Contacto.create(contenidoId))
                     }
                 )
             }
@@ -317,6 +339,12 @@ fun AppNavigation(cimRepository: CimRepository, contactoRepository: ContactoRepo
             }
         }
     }
+}
+
+// Abrir Explorar desde Inicio deja una sola entrada en el back stack (issue #5)
+private fun NavOptionsBuilder.abrirDesdeInicio() {
+    launchSingleTop = true
+    popUpTo(Screen.Inicio.route)
 }
 
 // Destinatario ficticio: docs/01 exige datos ficticios y prohíbe usar datos
