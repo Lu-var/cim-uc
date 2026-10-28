@@ -43,7 +43,7 @@ class DetalleViewModelTest {
             id = 1,
             titulo = fakeProyecto.titulo,
             descripcion = fakeProyecto.descripcion,
-            meta = "2025 · En curso",
+            meta = "En curso",
             anio = 2025,
             estado = "En curso",
             areaId = 1,
@@ -54,7 +54,7 @@ class DetalleViewModelTest {
             id = 10,
             titulo = "Análisis sísmico de muros CLT",
             descripcion = "Resumen sobre ensayos dinámicos en altura",
-            meta = "2023 · Artículo",
+            meta = "Artículo",
             anio = 2023,
             areaId = 1,
             areaNombre = "Construcción en Madera"

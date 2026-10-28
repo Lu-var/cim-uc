@@ -121,7 +121,7 @@ open class CimRepository(private val database: AppDatabase? = null) {
             id = id,
             titulo = titulo,
             descripcion = descripcion,
-            meta = unirMeta(anio.toString(), estado),
+            meta = estado,
             anio = anio,
             estado = estado,
             areaId = areaId,
@@ -136,7 +136,7 @@ open class CimRepository(private val database: AppDatabase? = null) {
             id = idCapacidad,
             titulo = nombre,
             descripcion = descripcion,
-            meta = areaNombre,
+            meta = "",
             areaId = idArea,
             areaNombre = areaNombre
         )
@@ -149,7 +149,7 @@ open class CimRepository(private val database: AppDatabase? = null) {
             id = idPublicacion,
             titulo = titulo,
             descripcion = resumen,
-            meta = unirMeta(anio.toString(), tipo),
+            meta = tipo,
             anio = anio,
             areaId = idArea,
             areaNombre = areaNombre
@@ -163,7 +163,9 @@ open class CimRepository(private val database: AppDatabase? = null) {
             id = id,
             titulo = nombre,
             descripcion = especialidad,
-            meta = unirMeta(rol, organizacionNombre.orEmpty())
+            meta = listOf(rol, organizacionNombre.orEmpty())
+                .filter { it.isNotBlank() }
+                .joinToString(" · ")
         )
     }
 
@@ -202,6 +204,3 @@ open class CimRepository(private val database: AppDatabase? = null) {
         )
     }
 }
-
-private fun unirMeta(vararg partes: String): String =
-    partes.filter { it.isNotBlank() }.joinToString(" · ")

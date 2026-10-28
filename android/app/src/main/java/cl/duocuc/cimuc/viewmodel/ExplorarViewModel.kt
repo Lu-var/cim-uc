@@ -66,8 +66,13 @@ class ExplorarViewModel(private val repository: CimRepository) : ViewModel() {
             val matchesQuery = if (normalizedQuery.isEmpty()) {
                 true
             } else {
-                listOf(contenido.titulo, contenido.descripcion, contenido.areaNombre, contenido.meta)
-                    .any { removeDiacritics(it.lowercase()).contains(normalizedQuery) }
+                listOf(
+                    contenido.titulo,
+                    contenido.descripcion,
+                    contenido.areaNombre,
+                    contenido.meta,
+                    contenido.anio?.toString().orEmpty()
+                ).any { removeDiacritics(it.lowercase()).contains(normalizedQuery) }
             }
 
             // Filtros estrictos: si el tipo no tiene el atributo, no pasa el filtro (HU-01, HU-03)
