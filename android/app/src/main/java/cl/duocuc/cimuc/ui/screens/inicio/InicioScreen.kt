@@ -40,10 +40,11 @@ import cl.duocuc.cimuc.ui.components.TopAppBarCommon
 // Actividades se mantiene fuera de Explorar: su acceso abre P-05 (tipo nulo)
 private data class AccesoTipo(
     val tipo: TipoContenido?,
-    val etiqueta: String,
     val conteo: Int,
     val icono: ImageVector
-)
+) {
+    val etiqueta: String get() = tipo?.etiquetaPlural ?: "Actividades"
+}
 
 // P-01 Inicio: acceso directo a cada tipo de contenido (HU-01, issues #4 y #5)
 @Composable
@@ -54,11 +55,11 @@ fun InicioScreen(
     onActividades: () -> Unit
 ) {
     val accesos = listOf(
-        AccesoTipo(TipoContenido.PROYECTO, TipoContenido.PROYECTO.etiquetaPlural, conteos.proyectos, Icons.Filled.Hub),
-        AccesoTipo(TipoContenido.CAPACIDAD, TipoContenido.CAPACIDAD.etiquetaPlural, conteos.capacidades, Icons.Filled.WorkspacePremium),
-        AccesoTipo(TipoContenido.INTEGRANTE, TipoContenido.INTEGRANTE.etiquetaPlural, conteos.integrantes, Icons.Filled.Groups),
-        AccesoTipo(TipoContenido.PUBLICACION, TipoContenido.PUBLICACION.etiquetaPlural, conteos.publicaciones, Icons.Filled.Search),
-        AccesoTipo(null, "Actividades", conteos.actividades, Icons.Filled.Event)
+        AccesoTipo(TipoContenido.PROYECTO, conteos.proyectos, Icons.Filled.Hub),
+        AccesoTipo(TipoContenido.CAPACIDAD, conteos.capacidades, Icons.Filled.WorkspacePremium),
+        AccesoTipo(TipoContenido.INTEGRANTE, conteos.integrantes, Icons.Filled.Groups),
+        AccesoTipo(TipoContenido.PUBLICACION, conteos.publicaciones, Icons.Filled.Search),
+        AccesoTipo(null, conteos.actividades, Icons.Filled.Event)
     )
 
     Scaffold(
