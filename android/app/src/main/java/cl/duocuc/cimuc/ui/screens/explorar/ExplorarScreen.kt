@@ -1,6 +1,7 @@
 package cl.duocuc.cimuc.ui.screens.explorar
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -80,183 +81,198 @@ fun ExplorarScreen(
                     .semantics { contentDescription = "Campo de búsqueda de contenidos" }
             )
 
-            // Selector de tipo de contenido
-            Text(
-                text = "Tipo",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(TipoContenido.entries, key = { it.ruta }) { tipo ->
-                    FilterChip(
-                        selected = tipo == uiState.selectedTipo,
-                        onClick = { onTipoSelected(tipo) },
-                        label = { Text(tipo.etiquetaPlural) },
-                        modifier = Modifier.heightIn(min = 48.dp)
-                    )
-                }
-            }
-
-            // Selector de área temática
-            Text(
-                text = "Área temática",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                items(uiState.areas, key = { it.id }) { area ->
-                    FilterChip(
-                        selected = area.id == uiState.selectedAreaId,
-                        onClick = { onAreaSelected(area.id) },
-                        label = { Text(area.nombre) },
-                        modifier = Modifier.heightIn(min = 48.dp)
-                    )
-                }
-            }
-            // Selector de año
-            Text(
-                text = "Año",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                items(uiState.aniosDisponibles, key = { it }) { anio ->
-                    FilterChip(
-                        selected = anio == uiState.selectedAnio,
-                        onClick = { onAnioSelected(anio) },
-                        label = { Text(anio.toString()) },
-                        modifier = Modifier.heightIn(min = 48.dp)
-                    )
-                }
-            }
-
-            //Selector de estado
-            Text(
-                text = "Estado",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                items(uiState.estadosDisponibles, key = { it }) { estado ->
-                    FilterChip(
-                        selected = estado == uiState.selectedEstado,
-                        onClick = { onEstadoSelected(estado) },
-                        label = { Text(estado) },
-                        modifier = Modifier.heightIn(min = 48.dp)
-                    )
-                }
-            }
-
-            // Etiquetas de filtros activos con "x" y botón "Limpiar todo"
-            val hayFiltros = uiState.selectedTipo != null ||
-                    uiState.selectedAreaId != null ||
-                    uiState.selectedAnio != null ||
-                    uiState.selectedEstado != null
-            if (hayFiltros || uiState.query.isNotEmpty()) {
-                // FlowRow: con tipo + área + año + estado las etiquetas deben envolver, no empujar "Limpiar todo" fuera
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    uiState.selectedTipo?.let { tipo ->
-                        FiltroActivoChip(etiqueta = tipo.etiquetaPlural) {
-                            onTipoSelected(
-                                null
-                            )
-                        }
-                    }
-                    uiState.areas.find { it.id == uiState.selectedAreaId }
-                        ?.let { area ->
-                            FiltroActivoChip(etiqueta = area.nombre) {
-                                onAreaSelected(
-                                    null
+                item {
+                    Column {
+                        // Selector de tipo de contenido
+                        Text(
+                            text = "Tipo",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+                        )
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            items(TipoContenido.entries, key = { it.ruta }) { tipo ->
+                                FilterChip(
+                                    selected = tipo == uiState.selectedTipo,
+                                    onClick = { onTipoSelected(tipo) },
+                                    label = { Text(tipo.etiquetaPlural) },
+                                    modifier = Modifier.heightIn(min = 48.dp)
                                 )
                             }
                         }
-                    uiState.selectedAnio?.let { anio ->
-                        FiltroActivoChip(etiqueta = anio.toString()) {
-                            onAnioSelected(
-                                null
-                            )
+
+                        // Selector de área temática
+                        Text(
+                            text = "Área temática",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+                        )
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            items(uiState.areas, key = { it.id }) { area ->
+                                FilterChip(
+                                    selected = area.id == uiState.selectedAreaId,
+                                    onClick = { onAreaSelected(area.id) },
+                                    label = { Text(area.nombre) },
+                                    modifier = Modifier.heightIn(min = 48.dp)
+                                )
+                            }
+                        }
+
+                        // Selector de año
+                        Text(
+                            text = "Año",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+                        )
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            items(uiState.aniosDisponibles, key = { it }) { anio ->
+                                FilterChip(
+                                    selected = anio == uiState.selectedAnio,
+                                    onClick = { onAnioSelected(anio) },
+                                    label = { Text(anio.toString()) },
+                                    modifier = Modifier.heightIn(min = 48.dp)
+                                )
+                            }
+                        }
+
+                        //Selector de estado
+                        Text(
+                            text = "Estado",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+                        )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            items(uiState.estadosDisponibles, key = { it }) { estado ->
+                                FilterChip(
+                                    selected = estado == uiState.selectedEstado,
+                                    onClick = { onEstadoSelected(estado) },
+                                    label = { Text(estado) },
+                                    modifier = Modifier.heightIn(min = 48.dp)
+                                )
+                            }
+                        }
+
+                        // Etiquetas de filtros activos con "x" y botón "Limpiar todo"
+                        val hayFiltros = uiState.selectedTipo != null ||
+                                uiState.selectedAreaId != null ||
+                                uiState.selectedAnio != null ||
+                                uiState.selectedEstado != null
+                        if (hayFiltros || uiState.query.isNotEmpty()) {
+                            // FlowRow: con tipo + área + año + estado las etiquetas deben envolver, no empujar "Limpiar todo" fuera
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                uiState.selectedTipo?.let { tipo ->
+                                    FiltroActivoChip(etiqueta = tipo.etiquetaPlural) {
+                                        onTipoSelected(
+                                            null
+                                        )
+                                    }
+                                }
+                                uiState.areas.find { it.id == uiState.selectedAreaId }
+                                    ?.let { area ->
+                                        FiltroActivoChip(etiqueta = area.nombre) {
+                                            onAreaSelected(
+                                                null
+                                            )
+                                        }
+                                    }
+                                uiState.selectedAnio?.let { anio ->
+                                    FiltroActivoChip(etiqueta = anio.toString()) {
+                                        onAnioSelected(
+                                            null
+                                        )
+                                    }
+                                }
+                                uiState.selectedEstado?.let { estado ->
+                                    FiltroActivoChip(etiqueta = estado) { onEstadoSelected(null) }
+                                }
+                                TextButton(onClick = onLimpiarFiltros) {
+                                    Text("Limpiar todo")
+                                }
+                            }
                         }
                     }
-                    uiState.selectedEstado?.let { estado ->
-                        FiltroActivoChip(etiqueta = estado) { onEstadoSelected(null) }
-                    }
-                    TextButton(onClick = onLimpiarFiltros) {
-                        Text("Limpiar todo")
-                    }
                 }
-            }
 
-            // Contador de resultados
-            Text(
-                text = "${uiState.totalCoincidencias} resultados",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .align(Alignment.CenterHorizontally)
+                item {
+                    // Contador de resultados
+                    Text(
+                        text = "${uiState.totalCoincidencias} resultados",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
 
-                uiState.isEmpty -> {
-                    // Estado vacío
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = "Sin resultados",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center
-                        )
-                        Button(onClick = onLimpiarFiltros) {
-                            Text("Limpiar búsqueda")
+                when {
+                    uiState.isLoading -> item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
-                }
 
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(
-                            items = uiState.contenidos,
-                            key = { "${it.tipo.ruta}-${it.id}" }
-                        ) { contenido ->
-                            ContenidoCard(
-                                contenido = contenido,
-                                onClick = { onContenidoClick(contenido.tipo, contenido.id) },
-                                modifier = Modifier.animateItem()
+                    uiState.isEmpty -> item {
+                        // Estado vacío
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = "Sin resultados",
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
                             )
+                            Button(onClick = onLimpiarFiltros) {
+                                Text("Limpiar búsqueda")
+                            }
                         }
+                    }
+
+                    else -> items(
+                        items = uiState.contenidos,
+                        key = { "${it.tipo.ruta}-${it.id}" }
+                    ) { contenido ->
+                        ContenidoCard(
+                            contenido = contenido,
+                            onClick = {
+                                onContenidoClick(
+                                    contenido.tipo,
+                                    contenido.id
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .animateItem()
+                        )
                     }
                 }
             }
